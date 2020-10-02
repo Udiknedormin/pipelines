@@ -1017,3 +1017,25 @@ implementation:
     workflow_dict = compiler.Compiler()._compile(some_pipeline)
     for template in workflow_dict['spec']['templates']:
       self.assertNotEqual(template['name'], '')
+
+  def test_unreferenced_outputs_are_present(self):
+    component_not_referencing_output = kfp.components.load_component_from_text('''
+inputs:
+- name: Input 1
+- name: Input 2
+outputs:
+- name: Output 1
+implementation:
+  container:
+    image: busybox
+    command:
+    - echo
+    - inputValue: Input 1
+    - inputPath: Input 2
+    ''')
+    def some_pipeline():
+      task = component_not_referencing_output('value 1', 'value 2')
+      assert 'Output 1' in task.outputs.keys()
+
+    some_pipeline()
+    kfp.compiler.Compiler().create_workflow(some_pipeline)
