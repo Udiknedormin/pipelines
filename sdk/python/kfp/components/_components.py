@@ -477,6 +477,10 @@ def _resolve_command_line_and_paths(
     expanded_command = expand_argument_list(container_spec.command)
     expanded_args = expand_argument_list(container_spec.args)
 
+    for output in component_spec.outputs or []:
+        if output.name not in output_paths:
+            output_paths[output.name] = None
+
     return _ResolvedCommandLineAndPaths(
         command=expanded_command,
         args=expanded_args,
